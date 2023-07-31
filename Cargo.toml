@@ -4,4 +4,10 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
+utils = { git = "https://github.com/radixdlt/radixdlt-scrypto", branch = "main" }
 radix-engine-common = { git = "https://github.com/radixdlt/radixdlt-scrypto", branch = "main" }
+num-bigint = "0.4.3"
+num-traits = "0.2.15"
+
+[dev-dependencies]
+paste = "1.0.13"

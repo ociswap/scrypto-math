@@ -1,23 +1,18 @@
-#[cfg(feature = "radix_engine_fuzzing")]
-use arbitrary::Arbitrary;
 use num_bigint::BigInt;
 use num_traits::{Pow, Zero};
-use sbor::rust::convert::{TryFrom, TryInto};
-use sbor::rust::fmt;
-use sbor::rust::format;
-use sbor::rust::iter;
-use sbor::rust::ops::*;
-use sbor::rust::prelude::*;
-use sbor::*;
 
-use crate::data::manifest::ManifestCustomValueKind;
-use crate::data::scrypto::*;
-use crate::math::bnum_integer::*;
-use crate::math::decimal::*;
-use crate::math::rounding_mode::*;
-use crate::math::PreciseDecimal;
-use crate::well_known_scrypto_custom_type;
-use crate::*;
+use utils::rust::convert::{TryFrom, TryInto};
+use utils::rust::fmt;
+use utils::rust::format;
+use utils::rust::iter;
+use utils::rust::ops::*;
+use utils::rust::prelude::*;
+use utils::rust::*;
+
+use radix_engine_common::math::bnum_integer::*;
+use radix_engine_common::math::decimal::*;
+use radix_engine_common::math::rounding_mode::*;
+use radix_engine_common::math::PreciseDecimal;
 
 /// `BalancedDecimal` represents a 256 bit representation of a fixed-scale decimal number.
 ///
@@ -490,21 +485,6 @@ impl BalancedDecimal {
     }
 }
 
-well_known_scrypto_custom_type!(
-    BalancedDecimal,
-    ScryptoCustomValueKind::BalancedDecimal,
-    Type::BalancedDecimal,
-    BalancedDecimal::BITS / 8,
-    BALANCED_DECIMAL_ID,
-    balanced_decimal_type_data
-);
-
-manifest_type!(
-    BalancedDecimal,
-    ManifestCustomValueKind::BalancedDecimal,
-    BalancedDecimal::BITS / 8
-);
-
 //======
 // text
 //======
@@ -670,9 +650,7 @@ impl PrecisionRounding for BalancedDecimal {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bdec;
     use paste::paste;
-    use sbor::rust::vec;
 
     #[test]
     fn test_format_balanced_decimal() {
@@ -1275,26 +1253,6 @@ mod tests {
         let sum2: BalancedDecimal = decimals.into_iter().sum();
         assert_eq!(sum1, bdec!("6"));
         assert_eq!(sum2, bdec!("6"));
-    }
-
-    #[test]
-    fn test_encode_decimal_value_balanced_decimal() {
-        let dec = bdec!("0");
-        let bytes = scrypto_encode(&dec).unwrap();
-        assert_eq!(bytes, {
-            let mut a = [0; 34];
-            a[0] = SCRYPTO_SBOR_V1_PAYLOAD_PREFIX;
-            a[1] = ScryptoValueKind::Custom(ScryptoCustomValueKind::BalancedDecimal).as_u8();
-            a
-        });
-    }
-
-    #[test]
-    fn test_decode_decimal_value_balanced_decimal() {
-        let dec = bdec!("1.23456789");
-        let bytes = scrypto_encode(&dec).unwrap();
-        let decoded: BalancedDecimal = scrypto_decode(&bytes).unwrap();
-        assert_eq!(decoded, bdec!("1.23456789"));
     }
 
     #[test]
