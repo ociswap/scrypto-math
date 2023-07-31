@@ -4,8 +4,8 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-utils = { git = "https://github.com/radixdlt/radixdlt-scrypto", branch = "main" }
-radix-engine-common = { git = "https://github.com/radixdlt/radixdlt-scrypto", branch = "main" }
+utils = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.10.0" }
+radix-engine-common = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.10.0" }
 num-bigint = "0.4.3"
 num-traits = "0.2.15"
 
