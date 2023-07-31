@@ -632,6 +632,18 @@ macro_rules! try_from_integer {
 }
 try_from_integer!(BnumI256, BnumI512, BnumU256, BnumU512);
 
+impl From<BalancedDecimal> for Decimal {
+    fn from(val: BalancedDecimal) -> Self {
+        Self(val.0 / BnumI256::from(10i8).pow(BalancedDecimal::SCALE - Self::SCALE))
+    }
+}
+
+impl From<BalancedDecimal> for PreciseDecimal {
+    fn from(val: BalancedDecimal) -> Self {
+        Self(BnumI512::from(val.0) * BnumI512::from(10i8).pow(Self::SCALE - BalancedDecimal::SCALE))
+    }
+}
+
 pub trait PrecisionRounding {
     fn floor_to_decimal(&self) -> Decimal;
     fn ceil_to_decimal(&self) -> Decimal;
@@ -1397,6 +1409,60 @@ mod tests {
         (PreciseDecimal::from(BalancedDecimal::MAX) + 1, 3),
         (PreciseDecimal::from(BalancedDecimal::MIN), 4)
     );
+
+    macro_rules! test_from_into_balanced_decimal_decimal {
+        ($(($from:expr, $expected:expr, $suffix:expr)),*) => {
+            paste!{
+            $(
+                #[test]
+                fn [<test_from_into_balanced_decimal_decimal_ $suffix>]() {
+                    let bdec = bdec!($from);
+                    let dec = Decimal::from(bdec);
+                    assert_eq!(dec.to_string(), $expected);
+
+                    let dec: Decimal = bdec.into();
+                    assert_eq!(dec.to_string(), $expected);
+                }
+            )*
+            }
+        };
+    }
+
+    test_from_into_balanced_decimal_decimal! {
+        ("12345678.12345678901234567890123456789012345678", "12345678.123456789012345678", 1),
+        ("0.00000000000000000000000000089012345678", "0", 2),
+        ("-0.00000000000000000000000000089012345678", "0", 3),
+        ("5", "5", 4),
+        ("12345678.1", "12345678.1", 5),
+        ("578960446186580977117854925043439539266.34992332820282019728792003956564819967", "578960446186580977117854925043439539266.349923328202820197", 6),
+        ("-578960446186580977117854925043439539266.34992332820282019728792003956564819968", "-578960446186580977117854925043439539266.349923328202820197", 7)
+    }
+
+    macro_rules! test_from_into_balanced_decimal_precise_decimal {
+        ($(($from:expr, $expected:expr, $suffix:expr)),*) => {
+            paste!{
+            $(
+                #[test]
+                fn [<test_from_into_balanced_decimal_precise_decimal_ $suffix>]() {
+                    let dec = bdec!($from);
+                    let pdec = PreciseDecimal::from(dec);
+                    assert_eq!(pdec.to_string(), $expected);
+
+                    let pdec: PreciseDecimal = dec.into();
+                    assert_eq!(pdec.to_string(), $expected);
+                }
+            )*
+            }
+        };
+    }
+
+    test_from_into_balanced_decimal_precise_decimal! {
+        ("12345678.12345678901234567890123456789012345678", "12345678.12345678901234567890123456789012345678", 1),
+        ("0.00000000000000000000000000000000000001", "0.00000000000000000000000000000000000001", 2),
+        ("-0.00000000000000000000000000000000000001", "-0.00000000000000000000000000000000000001", 3),
+        ("5", "5", 4),
+        ("12345678.1", "12345678.1", 5)
+    }
 
     macro_rules! test_try_from_integer_overflow {
         ($(($from:expr, $suffix:expr)),*) => {
