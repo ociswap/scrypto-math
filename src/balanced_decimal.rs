@@ -659,6 +659,34 @@ impl PrecisionRounding for BalancedDecimal {
     }
 }
 
+/// Creates a `BalancedDecimal` from literals.
+///
+#[macro_export]
+macro_rules! bdec {
+    ($x:literal) => {
+        BalancedDecimal::try_from($x).unwrap()
+    };
+
+    ($base:literal, $shift:literal) => {
+        // Base can be any type that converts into a BalancedDecimal, and shift must support
+        // comparison and `-` unary operation, enforced by rustc.
+        {
+            let base = BalancedDecimal::try_from($base).unwrap();
+            if $shift >= 0 {
+                base * BalancedDecimal::try_from(
+                    BnumI256::from(10u8).pow(u32::try_from($shift).expect("Shift overflow")),
+                )
+                .expect("Shift overflow")
+            } else {
+                base / BalancedDecimal::try_from(
+                    BnumI256::from(10u8).pow(u32::try_from(-$shift).expect("Shift overflow")),
+                )
+                .expect("Shift overflow")
+            }
+        }
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1075,13 +1103,33 @@ mod tests {
             BalancedDecimal::MAX.floor_to_decimal().to_string(),
             "578960446186580977117854925043439539266.349923328202820197"
         );
-        assert_eq!(bdec!("1.0000000000000000012").floor_to_decimal().to_string(), "1.000000000000000001");
+        assert_eq!(
+            bdec!("1.0000000000000000012")
+                .floor_to_decimal()
+                .to_string(),
+            "1.000000000000000001"
+        );
         assert_eq!(bdec!("1.0").floor_to_decimal().to_string(), "1");
-        assert_eq!(bdec!("0.0000000000000000009").floor_to_decimal().to_string(), "0");
+        assert_eq!(
+            bdec!("0.0000000000000000009")
+                .floor_to_decimal()
+                .to_string(),
+            "0"
+        );
         assert_eq!(bdec!("0").floor_to_decimal().to_string(), "0");
-        assert_eq!(bdec!("-0.0000000000000000002").floor_to_decimal().to_string(), "-0.000000000000000001");
+        assert_eq!(
+            bdec!("-0.0000000000000000002")
+                .floor_to_decimal()
+                .to_string(),
+            "-0.000000000000000001"
+        );
         assert_eq!(bdec!("-1").floor_to_decimal().to_string(), "-1");
-        assert_eq!(bdec!("-5.0000000000000000057").floor_to_decimal().to_string(), "-5.000000000000000006");
+        assert_eq!(
+            bdec!("-5.0000000000000000057")
+                .floor_to_decimal()
+                .to_string(),
+            "-5.000000000000000006"
+        );
     }
 
     #[test]
@@ -1092,13 +1140,29 @@ mod tests {
 
     #[test]
     fn test_ceil_to_decimal_balanced_decimal() {
-        assert_eq!(bdec!("1.0000000000000000012").ceil_to_decimal().to_string(), "1.000000000000000002");
+        assert_eq!(
+            bdec!("1.0000000000000000012").ceil_to_decimal().to_string(),
+            "1.000000000000000002"
+        );
         assert_eq!(bdec!("1.0").ceil_to_decimal().to_string(), "1");
-        assert_eq!(bdec!("0.0000000000000000009").ceil_to_decimal().to_string(), "0.000000000000000001");
+        assert_eq!(
+            bdec!("0.0000000000000000009").ceil_to_decimal().to_string(),
+            "0.000000000000000001"
+        );
         assert_eq!(bdec!("0").ceil_to_decimal().to_string(), "0");
-        assert_eq!(bdec!("-0.0000000000000000016").ceil_to_decimal().to_string(), "-0.000000000000000001");
+        assert_eq!(
+            bdec!("-0.0000000000000000016")
+                .ceil_to_decimal()
+                .to_string(),
+            "-0.000000000000000001"
+        );
         assert_eq!(bdec!("-1").ceil_to_decimal().to_string(), "-1");
-        assert_eq!(bdec!("-5.0000000000000000052").ceil_to_decimal().to_string(), "-5.000000000000000005");
+        assert_eq!(
+            bdec!("-5.0000000000000000052")
+                .ceil_to_decimal()
+                .to_string(),
+            "-5.000000000000000005"
+        );
         assert_eq!(
             BalancedDecimal::MIN.ceil_to_decimal().to_string(),
             "-578960446186580977117854925043439539266.349923328202820197"
