@@ -18,3 +18,7 @@ Cargo.lock
 
 /target
 /Cargo.lock
+
+build/
+*.egg-info/
+__pycache__/
