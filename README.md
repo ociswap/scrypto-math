@@ -54,6 +54,13 @@ let amount: BalancedDecimal = BalancedDecimal::try_from(amount).expect("Value to
 let output: PreciseDecimal = amount.into()
 ```
 
+You can see a full blueprint example including tests here [BalancedDecimalDemo](examples/balanced_decimal/src/lib.rs).
+
+## Upcoming Features
+- exp
+- log
+- pow
+
 ## Contributions
 We are happy to collaborate and review and merge pull requests :)
 
