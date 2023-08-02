@@ -3,7 +3,7 @@ name = "scrypto_math"
 version = "0.0.1"
 edition = "2021"
 license = "MIT"
-license-file = "LICENSE.txt"
+description = "Math library extending Radix Scrypto with more advanced mathematical operations"
 repository = "https://github.com/ociswap/scrypto-math"
 
 [dependencies]
