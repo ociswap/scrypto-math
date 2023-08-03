@@ -88,9 +88,19 @@ class ScryptoBaseDecimal(FixedBaseDecimal):
         return _to_decimal_digits(
             self, bits=self.bits, decimal_places=self.decimal_places
         )
-    
+
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}('{self}')"
+
+    @classmethod
+    def __new__(cls, __value, context: decimal.Context | None = None):
+        value = super().__new__(__value, context)
+        if (
+            isinstance(value, decimal.Decimal)
+            and value.as_tuple().exponent >= -cls.decimal_places
+        ):
+            return value
+        return cls._cast(value)
 
     @classmethod
     def _cast(cls, __value: decimal.Decimal, rounding=decimal.ROUND_FLOOR):
