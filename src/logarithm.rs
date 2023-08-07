@@ -118,34 +118,31 @@ fn log_reduce_argument(number: BalancedDecimal) -> (i32, BalancedDecimal) {
 impl LogarithmDecimal for Decimal {
     fn ln(&self) -> Option<Decimal> {
         BalancedDecimal::try_from(*self)
-            .ok()
-            .and_then(|n| n.ln())
-            .map(|e| e.into())
+            .ok()?
+            .ln()
+            .map(|log| log.into())
     }
 
     fn log2(&self) -> Option<Decimal> {
         BalancedDecimal::try_from(*self)
-            .ok()
-            .and_then(|n| n.log2())
-            .map(|e| e.into())
+            .ok()?
+            .log2()
+            .map(|log| log.into())
     }
 
     fn log10(&self) -> Option<Decimal> {
         BalancedDecimal::try_from(*self)
-            .ok()
-            .and_then(|n| n.log10())
-            .map(|e| e.into())
+            .ok()?
+            .log10()
+            .map(|log| log.into())
     }
 
     fn log_base(&self, base: Decimal) -> Option<Decimal> {
+        let base = BalancedDecimal::try_from(base).ok()?;
         BalancedDecimal::try_from(*self)
-            .ok()
-            .and_then(|n| {
-                BalancedDecimal::try_from(base)
-                    .ok()
-                    .and_then(|base| n.log_base(base))
-            })
-            .map(|e| e.into())
+            .ok()?
+            .log_base(base)
+            .map(|log| log.into())
     }
 }
 
@@ -169,16 +166,16 @@ impl LogarithmBalancedDecimal for BalancedDecimal {
     }
 
     fn log2(&self) -> Option<BalancedDecimal> {
-        self.ln().map(|ln| ln / LN2)
+        Some(self.ln()? / LN2)
     }
 
     fn log10(&self) -> Option<BalancedDecimal> {
-        self.ln().map(|ln| ln / LN10)
+        Some(self.ln()? / LN10)
     }
 
     fn log_base(&self, base: BalancedDecimal) -> Option<BalancedDecimal> {
-        self.ln()
-            .and_then(|ln| base.ln().map(|base_ln| ln / base_ln))
+        let base_ln = base.ln()?;
+        Some(self.ln()? / base_ln)
     }
 }
 
@@ -204,8 +201,14 @@ mod tests {
 
     #[test]
     fn test_ln_e() {
-        assert_eq!(dec!("2.718281828459045235").ln(), Some(dec!(1) - dec!("0.000000000000000001")));
-        assert_eq!(bdec!("2.71828182845904523536028747135266249775").ln(), Some(bdec!(1) - bdec!("0.00000000000000000007225640213908820418")));
+        assert_eq!(
+            dec!("2.718281828459045235").ln(),
+            Some(dec!(1) - dec!("0.000000000000000001"))
+        );
+        assert_eq!(
+            bdec!("2.71828182845904523536028747135266249775").ln(),
+            Some(bdec!(1) - bdec!("0.00000000000000000007225640213908820418"))
+        );
     }
 
     #[test]
@@ -299,7 +302,7 @@ mod tests {
         assert_eq!(
             dec!(10).log10(),
             Some(dec!(1) - dec!("0.000000000000000001"))
-        );  
+        );
         assert_eq!(dec!(20).log10(), Some(dec!("1.301029995663981195")));
     }
 
@@ -308,7 +311,10 @@ mod tests {
         assert_eq!(dec!(-1).log_base(dec!(8)), None);
         assert_eq!(dec!(0).log_base(dec!(8)), None);
         assert_eq!(dec!(1).log_base(dec!(8)), Some(dec!(0)));
-        assert_eq!(dec!(5).log_base(dec!(8)), Some(dec!("0.773976031629120782")));
+        assert_eq!(
+            dec!(5).log_base(dec!(8)),
+            Some(dec!("0.773976031629120782"))
+        );
         assert_eq!(dec!(8).log_base(dec!(8)), Some(dec!(1)));
         assert_eq!(
             dec!(10).log_base(dec!(8)),

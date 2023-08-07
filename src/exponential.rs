@@ -80,7 +80,7 @@ impl ExponentialDecimal for Decimal {
             return None;
         }
         BalancedDecimal::try_from(*self)
-            .unwrap()
+            .ok()?
             .exp()
             .map(|e| e.into())
     }

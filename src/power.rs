@@ -17,14 +17,11 @@ pub trait PowerBalancedDecimal {
 
 impl PowerDecimal for Decimal {
     fn pow(&self, exp: Decimal) -> Option<Decimal> {
+        let exp = BalancedDecimal::try_from(exp).ok()?;
         BalancedDecimal::try_from(*self)
-            .ok()
-            .and_then(|n| {
-                BalancedDecimal::try_from(exp)
-                    .ok()
-                    .and_then(|exp| n.pow(exp))
-            })
-            .map(|e| e.into())
+            .ok()?
+            .pow(exp)
+            .map(|pow| pow.into())
     }
 }
 
@@ -57,10 +54,11 @@ impl PowerBalancedDecimal for BalancedDecimal {
                 return None;
             }
             let is_even = (exp.0 / BalancedDecimal::ONE.0).to_i32()? % 2 == 0;
+            let pow = (self.abs().ln()? * exp).exp();
             if is_even {
-                return (self.abs().ln()? * exp).exp();
+                return pow;
             }
-            return Some(bdec!(-1) * (self.abs().ln()? * exp).exp()?);
+            return Some(bdec!(-1) * pow?);
         }
 
         Some((self.ln()? * exp).exp()?)
