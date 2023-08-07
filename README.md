@@ -99,12 +99,12 @@ The power function internally uses both `exp` and `ln` and also covers various s
 
 For `Decimal`:
 ```rust
-let pow: Option<Decimal> = dec!("3.14").pow("-34.12");
+let pow: Option<Decimal> = dec!("3.14").pow("-14.12");
 ```
 
 For `BalancedDecimal`:
 ```rust
-let pow: Option<BalancedDecimal> = bdec!("3.14").pow("-34.97");
+let pow: Option<BalancedDecimal> = bdec!("3.14").pow("-45.97");
 ```
 
 You can see a full blueprint example including tests here [AdvancedMathDemo](examples/advanced_math/src/lib.rs).
