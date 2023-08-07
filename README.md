@@ -58,7 +58,7 @@ You can see a full blueprint example including tests here [BalancedDecimalDemo](
 
 
 ### Exponential Function
-The exponential function is provided for `Decimal` and `BalancedDecimal` with a polynomial approximation error lower than ~18 significant digits.
+The exponential function is provided for `Decimal` and `BalancedDecimal` with a polynomial approximation error lower than ~ 18 significant digits.
 Background: the final result is calculated via `exp(x) = 2**k * R(r)` and the approximation `R(r)` is bound by an maximum error of `2**-59` (~ 18 decimal places).
 
 For `Decimal`:
