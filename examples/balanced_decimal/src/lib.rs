@@ -1,5 +1,5 @@
 use scrypto::prelude::*;
-use scrypto_math::balanced_decimal::*;
+use scrypto_math::*;
 
 #[blueprint]
 mod balanced_decimal_demo {

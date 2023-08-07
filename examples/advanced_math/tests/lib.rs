@@ -3,7 +3,7 @@ use scrypto_unit::*;
 use transaction::builder::ManifestBuilder;
 
 #[test]
-fn test_balanced_decimal_demo() {
+fn test_advanced_math_demo() {
     let mut test_runner = TestRunner::builder().without_trace().build();
     let (public_key, _private_key, account) = test_runner.new_allocated_account();
     let package_address = test_runner.compile_and_publish(this_package!());
@@ -11,7 +11,7 @@ fn test_balanced_decimal_demo() {
     let manifest = ManifestBuilder::new()
         .call_function(
             package_address,
-            "BalancedDecimalDemo",
+            "AdvancedMathDemo",
             "instantiate",
             manifest_args!(),
         )
@@ -26,13 +26,8 @@ fn test_balanced_decimal_demo() {
     let manifest = ManifestBuilder::new()
         .call_method(
             component,
-            "free_tokens_decimal",
-            manifest_args!(dec!("29.393993999102121881")),
-        )
-        .call_method(
-            component,
-            "free_tokens_precise_decimal",
-            manifest_args!(pdec!("29.3939939991021218813939939991021218815400001")),
+            "free_tokens",
+            manifest_args!(dec!("3.14159265359")),
         )
         .deposit_batch(account)
         .build();
@@ -42,9 +37,7 @@ fn test_balanced_decimal_demo() {
     );
     println!("{:?}\n", receipt);
     let commit_result = receipt.expect_commit_success();
-    let (_, output_free_tokens_decimal): (Bucket, Decimal) = commit_result.output(1);
-    let (_, output_free_tokens_precise_decimal): (Bucket, PreciseDecimal) = commit_result.output(2);
+    let (_, output_free_tokens): (Bucket, Decimal) = commit_result.output(1);
 
-    assert_eq!(output_free_tokens_decimal, dec!("29.393993999102121881"));
-    assert_eq!(output_free_tokens_precise_decimal, pdec!("29.39399399910212188139399399910212188154"));
+    assert_eq!(output_free_tokens, dec!("19.677426163416980842") + dec!("0.000000000000000013"));
 }
