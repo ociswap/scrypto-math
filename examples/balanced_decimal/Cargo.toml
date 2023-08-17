@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 sbor = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.10.0" }
 scrypto = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.10.0" }
-scrypto_math = { git = "https://github.com/ociswap/scrypto-math", branch = "main", version = "0.1.0" }
+scrypto_math = { git = "https://github.com/ociswap/scrypto-math", branch = "main", version = "0.1.1" }
 # scrypto_math = { path = "../../" }
 
 [dev-dependencies]
