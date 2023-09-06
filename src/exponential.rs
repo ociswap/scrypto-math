@@ -104,9 +104,9 @@ impl ExponentialBalancedDecimal for PreciseDecimal {
         let k: i32 = (k.0 / PreciseDecimal::ONE.0).to_i32().unwrap();
         let r = *self - LN2 * k;
 
-        println!("k = {:?}, r = {:?}", k, r);
-        println!("x_n = {:?}", LN2 * k + r);
-        println!("x_o = {:?}", self);
+        // println!("k = {:?}, r = {:?}", k, r);
+        // println!("x_n = {:?}", LN2 * k + r);
+        // println!("x_o = {:?}", self);
 
         let rr = r * r;
         let c = r - rr * (P1 + rr * (P2 + rr * (P3 + rr * (P4 + rr * P5))));
