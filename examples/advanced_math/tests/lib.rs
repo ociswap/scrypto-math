@@ -4,7 +4,7 @@ use transaction::builder::ManifestBuilder;
 
 #[test]
 fn test_advanced_math_demo() {
-    let mut test_runner = TestRunner::builder().without_trace().build();
+    let mut test_runner = TestRunnerBuilder::new().without_trace().build();
     let (public_key, _private_key, account) = test_runner.new_allocated_account();
     let package_address = test_runner.compile_and_publish(this_package!());
 
