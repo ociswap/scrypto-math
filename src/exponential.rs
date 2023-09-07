@@ -60,7 +60,7 @@ pub trait ExponentialDecimal {
     fn exp(&self) -> Option<Decimal>;
 }
 
-pub trait ExponentialBalancedDecimal {
+pub trait ExponentialPreciseDecimal {
     fn exp(&self) -> Option<PreciseDecimal>;
 }
 
@@ -79,7 +79,7 @@ impl ExponentialDecimal for Decimal {
     }
 }
 
-impl ExponentialBalancedDecimal for PreciseDecimal {
+impl ExponentialPreciseDecimal for PreciseDecimal {
     fn exp(&self) -> Option<PreciseDecimal> {
         // based on https://github.com/rust-lang/libm/blob/master/src/math/exp.rs
         if self.is_zero() {
