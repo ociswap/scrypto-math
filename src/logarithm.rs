@@ -95,7 +95,7 @@ fn log_reduce_argument(number: PreciseDecimal) -> (i32, PreciseDecimal) {
         let k = number.0.leading_zeros() as i32 - SQRT_HALF.0.leading_zeros() as i32;
         let r = number * PreciseDecimal(PreciseDecimal::ONE.0 << k as u32);
 
-        if r >= SQRT {
+        if r >= SQRT_HALF {
             return (-k, r);
         }
 
@@ -151,7 +151,7 @@ impl LogarithmPreciseDecimal for PreciseDecimal {
         }
         let (k, r) = log_reduce_argument(*self);
         // println!("k = {:?}, r = {:?}", k, r);
-        // println!("x_n = {:?}", pdec!(2).powi(k.into()) * r);
+        // println!("x_n = {:?}", pdec!(2).checked_powi(k.into())? * r);
         // println!("x_o = {:?}", self);
 
         let f = r - PreciseDecimal::ONE;
@@ -239,6 +239,92 @@ mod tests {
     fn test_ln_negative_number() {
         assert_eq!(dec!(-1).ln(), None);
         assert_eq!(pdec!(-1).ln(), None);
+    }
+
+    #[test]
+    fn test_ln_lesser_sqrt_half() {
+        assert_eq!(
+            (SQRT_HALF - pdec!("0.000000000000000000000000000000000001")).ln(),
+            Some(
+                pdec!("-0.346573590279972654708616060729088286")
+                    - pdec!("0.000000000000000000349708283169683682")
+            )
+        ); // * 2
+        assert_eq!(
+            dec!("0.664613997892457936").ln(),
+            Some(dec!("-0.408548861152152805") + dec!("0.000000000000000001"))
+        ); // * 2; equal leading zeros of sqrt_half and number (~ 2 ** 119 = 1000...)
+        assert_eq!(dec!("0.5").ln(), Some(dec!("-0.693147180559945309"))); // * 2
+        assert_eq!(dec!("0.25").ln(), Some(dec!("-1.386294361119890618"))); // * 2^2
+        assert_eq!(dec!("0.125").ln(), Some(dec!("-2.079441541679835928"))); // * 2^3
+    }
+
+    #[test]
+    fn test_ln_equal_sqrt_half() {
+        assert_eq!(
+            SQRT_HALF.ln(),
+            Some(
+                pdec!("-0.346573590279972654708616060729088284")
+                    + pdec!("0.000000000000000000349708283169683683")
+            )
+        );
+    }
+
+    #[test]
+    fn test_ln_between_sqrt_half_and_sqrt() {
+        assert_eq!(
+            (SQRT_HALF + pdec!("0.000000000000000000000000000000000001")).ln(),
+            Some(
+                pdec!("-0.346573590279972654708616060729088284")
+                    + pdec!("0.000000000000000000349708283169683685")
+            )
+        );
+        assert_eq!(dec!("0.8").ln(), Some(dec!("-0.223143551314209755")));
+        assert_eq!(
+            dec!("1.329227995784915872").ln(),
+            Some(dec!("0.284598319407792504") + dec!("0.000000000000000001"))
+        ); // equal leading zeros of sqrt_half and number (~ 2 ** 120 - 1 = 1111...)
+        assert_eq!(
+            dec!("1.329227995784915873").ln(),
+            Some(dec!("0.284598319407792505"))
+        ); // equal leading zeros of sqrt and number (~ 2 ** 120 = 1000...)
+        assert_eq!(dec!("1.2").ln(), Some(dec!("0.182321556793954626")));
+        assert_eq!(
+            (SQRT - pdec!("0.000000000000000000000000000000000001")).ln(),
+            Some(
+                pdec!("0.346573590279972654708616060729088282")
+                    - pdec!("0.000000000000000000349708283169683681")
+            )
+        );
+    }
+
+    #[test]
+    fn test_ln_equal_sqrt() {
+        assert_eq!(
+            SQRT.ln(),
+            Some(
+                pdec!("0.346573590279972654708616060729088284")
+                    - pdec!("0.000000000000000000349708283169683683")
+            )
+        );
+    }
+
+    #[test]
+    fn test_ln_greater_sqrt() {
+        assert_eq!(
+            (SQRT + pdec!("0.000000000000000000000000000000000001")).ln(),
+            Some(
+                pdec!("0.346573590279972654708616060729088284")
+                    + pdec!("0.000000000000000000349708283169683683")
+            )
+        ); // * 2
+        assert_eq!(
+            dec!("2.658455991569831745").ln(),
+            Some(dec!("0.977745499967737814"))
+        ); // equal leading zeros for sqrt and number (~ 2**121 - 1 = 1111...)
+        assert_eq!(dec!("2").ln(), Some(dec!("0.693147180559945309"))); // / 2
+        assert_eq!(dec!("4").ln(), Some(dec!("1.386294361119890618"))); // / 2^2
+        assert_eq!(dec!("8").ln(), Some(dec!("2.079441541679835928"))); // / 2^3
     }
 
     #[test]
