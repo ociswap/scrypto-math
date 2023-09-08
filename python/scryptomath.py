@@ -111,33 +111,20 @@ class ScryptoBaseDecimal(FixedBaseDecimal):
     @property
     def scrypto(self):
         scrypto_type = self.__class__.__name__
-        return f"{scrypto_type}(BnumI{self.bits}::from_digits({self.to_digits()}))"
+        return f"{scrypto_type}(I{self.bits}::from_digits({self.to_digits()}))"
 
 
 class Decimal(ScryptoBaseDecimal):
     decimal_places = 18
+    bits = 192
+
+
+class PreciseDecimal(ScryptoBaseDecimal):
+    decimal_places = 36
     bits = 256
 
-
-class RoundToScryptoDecimal:
     def ceil_to_decimal(self) -> "Decimal":
         return Decimal._cast(self, decimal.ROUND_CEILING)
 
     def floor_to_decimal(self) -> "Decimal":
         return Decimal._cast(self)
-
-
-class BalancedDecimal(ScryptoBaseDecimal, RoundToScryptoDecimal):
-    decimal_places = 38
-    bits = 256
-
-
-class PreciseDecimal(ScryptoBaseDecimal, RoundToScryptoDecimal):
-    decimal_places = 64
-    bits = 512
-
-    def ceil_to_balanced_decimal(self) -> "BalancedDecimal":
-        return BalancedDecimal._cast(self, decimal.ROUND_CEILING)
-
-    def floor_to_balanced_decimal(self) -> "BalancedDecimal":
-        return BalancedDecimal._cast(self, decimal.ROUND_FLOOR)

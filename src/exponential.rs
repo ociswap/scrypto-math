@@ -1,73 +1,67 @@
 use num_traits::ToPrimitive;
 use radix_engine_common::math::bnum_integer::*;
 use radix_engine_common::math::decimal::*;
+use radix_engine_common::prelude::PreciseDecimal;
 use radix_engine_common::*;
 
-use crate::balanced_decimal::BalancedDecimal;
-use crate::bdec;
-
-const LN2: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    4887746961572732391,
-    3757558395076474551,
+const LN2: PreciseDecimal = PreciseDecimal(I256::from_digits([
+    9456716947207598648,
+    37575583950764745,
     0,
     0,
 ]));
-const HALF_POSITIVE: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    343699775700336640,
-    2710505431213761085,
+const HALF_POSITIVE: PreciseDecimal = PreciseDecimal(I256::from_digits([
+    15683169460410122240,
+    27105054312137610,
     0,
     0,
 ]));
-const HALF_NEGATIVE: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    18103044298009214976,
-    15736238642495790530,
+const HALF_NEGATIVE: PreciseDecimal = PreciseDecimal(I256::from_digits([
+    2763574613299429376,
+    18419639019397414005,
     18446744073709551615,
     18446744073709551615,
 ]));
-const INVLN2: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    14785644574383232046,
-    7820865487829388881,
+const INVLN2: PreciseDecimal = PreciseDecimal(I256::from_digits([
+    15089719145448569129,
+    78208654878293888,
     0,
     0,
 ]));
 
-const P1: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    9815257410705686528,
-    903501810404583517,
+const P1: PreciseDecimal = PreciseDecimal(I256::from_digits([
+    3234099066637680640,
+    9035018104045835,
     0,
     0,
 ])); // 1.66666666666666019037e-01
-const P2: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    15655445234027528192,
-    18431685710203221679,
+const P2: PreciseDecimal = PreciseDecimal(I256::from_digits([
+    11778003218777292800,
+    18446593490074488316,
     18446744073709551615,
     18446744073709551615,
 ])); //  -2.77777777770155933842e-03
-const P3: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    6103176189629636608,
-    358532448599637,
+const P3: PreciseDecimal = PreciseDecimal(I256::from_digits([
+    6886327069168830464,
+    3585324485996,
     0,
     0,
 ])); // 6.61375632143793436117e-05
-const P4: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    15690603967107440640,
-    18446735110663206201,
+const P4: PreciseDecimal = PreciseDecimal(I256::from_digits([
+    15836638502324193280,
+    18446743984079088161,
     18446744073709551615,
     18446744073709551615,
 ])); // -1.65339022054652515390e-06
-const P5: BalancedDecimal = BalancedDecimal(BnumI256::from_digits([
-    10758981003257543680,
-    224328845270,
-    0,
-    0,
-])); //4.13813679705723846039e-08
+const P5: PreciseDecimal =
+    PreciseDecimal(I256::from_digits([13020310661629261568, 2243288452, 0, 0])); //4.13813679705723846039e-08
 
 pub trait ExponentialDecimal {
     fn exp(&self) -> Option<Decimal>;
 }
 
-pub trait ExponentialBalancedDecimal {
-    fn exp(&self) -> Option<BalancedDecimal>;
+pub trait ExponentialPreciseDecimal {
+    fn exp(&self) -> Option<PreciseDecimal>;
 }
 
 impl ExponentialDecimal for Decimal {
@@ -75,27 +69,26 @@ impl ExponentialDecimal for Decimal {
         if self < &dec!(-42) {
             return Some(Decimal::ZERO);
         }
-
-        if self > &dec!(88) {
+        if self > &dec!(90) {
             return None;
         }
-        BalancedDecimal::try_from(*self)
+        PreciseDecimal::try_from(*self)
             .ok()?
             .exp()
-            .map(|e| e.into())
+            .and_then(|e| e.try_into().ok())
     }
 }
 
-impl ExponentialBalancedDecimal for BalancedDecimal {
-    fn exp(&self) -> Option<BalancedDecimal> {
+impl ExponentialPreciseDecimal for PreciseDecimal {
+    fn exp(&self) -> Option<PreciseDecimal> {
         // based on https://github.com/rust-lang/libm/blob/master/src/math/exp.rs
         if self.is_zero() {
-            return Some(BalancedDecimal::ONE);
+            return Some(PreciseDecimal::ONE);
         }
-        if self < &bdec!(-88) {
-            return Some(BalancedDecimal::ZERO);
+        if self < &pdec!(-82) {
+            return Some(PreciseDecimal::ZERO);
         }
-        if self > &bdec!(88) {
+        if self > &pdec!(93) {
             return None;
         }
 
@@ -108,7 +101,7 @@ impl ExponentialBalancedDecimal for BalancedDecimal {
         // r = x - floor(x/ln(2) +- 0.5) * ln(2)
         // https://www.wolframalpha.com/input?i=x+-+floor%28x%2Fln%282%29+%2B+0.5%29+*+ln%282%29
         let k = INVLN2 * *self + signed_half;
-        let k: i32 = (k.0 / BalancedDecimal::ONE.0).to_i32().unwrap();
+        let k: i32 = (k.0 / PreciseDecimal::ONE.0).to_i32().unwrap();
         let r = *self - LN2 * k;
 
         // println!("k = {:?}, r = {:?}", k, r);
@@ -117,12 +110,12 @@ impl ExponentialBalancedDecimal for BalancedDecimal {
 
         let rr = r * r;
         let c = r - rr * (P1 + rr * (P2 + rr * (P3 + rr * (P4 + rr * P5))));
-        let exp_r = BalancedDecimal::ONE + r + (r * c) / (dec!(2) - c);
+        let exp_r = PreciseDecimal::ONE + r + (r * c) / (dec!(2) - c);
 
         let two_pow_k = if self.is_negative() {
-            BalancedDecimal(BalancedDecimal::ONE.0 >> k.abs().into())
+            PreciseDecimal(PreciseDecimal::ONE.0 >> k.abs() as u32)
         } else {
-            BalancedDecimal(BalancedDecimal::ONE.0 << k.into()) // k <= 127
+            PreciseDecimal(PreciseDecimal::ONE.0 << k as u32) // k <= 130
         };
         Some(two_pow_k * exp_r)
     }
@@ -134,13 +127,26 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
+    fn test_constants() {
+        assert_eq!(LN2, pdec!("0.693147180559945309417232121458176568"));
+        assert_eq!(HALF_POSITIVE, pdec!("0.5"));
+        assert_eq!(HALF_NEGATIVE, pdec!("-0.5"));
+        assert_eq!(INVLN2, pdec!("1.442695040888963407359924681001892137"));
+        assert_eq!(P1, pdec!("0.166666666666666019037"));
+        assert_eq!(P2, pdec!("-0.00277777777770155933842"));
+        assert_eq!(P3, pdec!("0.0000661375632143793436117"));
+        assert_eq!(P4, pdec!("-0.00000165339022054652515390"));
+        assert_eq!(P5, pdec!("0.0000000413813679705723846039"));
+    }
+
+    #[test]
     fn test_exponent_positive() {
         assert_eq!(dec!("0.1").exp(), Some(dec!("1.105170918075647624")));
         assert_eq!(
-            bdec!("0.1").exp(),
+            pdec!("0.1").exp(),
             Some(
-                bdec!("1.10517091807564762481170782649024666822")
-                    + bdec!("0.00000000000000000007184816985596142021")
+                pdec!("1.105170918075647624811707826490246668")
+                    + pdec!("0.000000000000000000073249221022502114")
             )
         );
         assert_eq!(
@@ -148,10 +154,10 @@ mod tests {
             Some(dec!("2.718281828459045235") - dec!("0.000000000000000001"))
         );
         assert_eq!(
-            bdec!(1).exp(),
+            pdec!(1).exp(),
             Some(
-                bdec!("2.71828182845904523536028747135266249775")
-                    - bdec!("0.00000000000000000056697581981633858323")
+                pdec!("2.718281828459045235360287471352662497")
+                    - pdec!("0.000000000000000000506600695098127761")
             )
         );
         assert_eq!(
@@ -159,32 +165,32 @@ mod tests {
             Some(dec!("7.389056098930650227") - dec!("0.000000000000000001"))
         );
         assert_eq!(
-            bdec!(2).exp(),
+            pdec!(2).exp(),
             Some(
-                bdec!("7.38905609893065022723042746057500781318")
-                    - bdec!("0.00000000000000000049348300468610545638")
+                pdec!("7.389056098930650227230427460575007813")
+                    - pdec!("0.000000000000000000502826567049772189")
             )
         );
         assert_eq!(
             dec!(5).exp(),
-            Some(dec!("148.413159102576603421") - dec!("0.000000000000000014"))
+            Some(dec!("148.413159102576603421") - dec!("0.000000000000000013"))
         );
         assert_eq!(
-            bdec!(5).exp(),
+            pdec!(5).exp(),
             Some(
-                bdec!("148.41315910257660342111558004055227962348")
-                    - bdec!("0.00000000000000001343302197722530682860")
+                pdec!("148.413159102576603421115580040552279623")
+                    - pdec!("0.000000000000000012819743652169222343")
             )
         );
         assert_eq!(
             dec!(10).exp(),
-            Some(dec!("22026.465794806716516957") - dec!("0.000000000000005071"))
+            Some(dec!("22026.465794806716516957") - dec!("0.000000000000004654"))
         );
         assert_eq!(
-            bdec!(10).exp(),
+            pdec!(10).exp(),
             Some(
-                bdec!("22026.46579480671651695790064528424436635351")
-                    - bdec!("0.00000000000000507172344337393935374039")
+                pdec!("22026.465794806716516957900645284244366353")
+                    - pdec!("0.000000000000004654463413405594362897")
             )
         );
     }
@@ -193,42 +199,42 @@ mod tests {
     fn test_exponent_negative() {
         assert_eq!(dec!("-0.1").exp(), Some(dec!("0.904837418035959573")));
         assert_eq!(
-            bdec!("-0.1").exp(),
+            pdec!("-0.1").exp(),
             Some(
-                bdec!("0.90483741803595957316424905944643662119")
-                    - bdec!("0.00000000000000000005885564521858091519")
+                pdec!("0.904837418035959573164249059446436621")
+                    - pdec!("0.000000000000000000059971389890128697")
             )
         );
         assert_eq!(dec!(-1).exp(), Some(dec!("0.367879441171442321")));
         assert_eq!(
-            bdec!(-1).exp(),
+            pdec!(-1).exp(),
             Some(
-                bdec!("0.36787944117144232159552377016146086744")
-                    + bdec!("0.00000000000000000007020286164488250299")
+                pdec!("0.367879441171442321595523770161460867")
+                   + pdec!("0.000000000000000000068560948558969987")
             )
         );
         assert_eq!(dec!(-2).exp(), Some(dec!("0.135335283236612691")));
         assert_eq!(
-            bdec!(-2).exp(),
+            pdec!(-2).exp(),
             Some(
-                bdec!("0.13533528323661269189399949497248440340")
-                    + bdec!("0.00000000000000000000905932412046340746")
+                pdec!("0.135335283236612691893999494972484403")
+                  + pdec!("0.000000000000000000009209589825745512")
             )
         );
         assert_eq!(dec!(-5).exp(), Some(dec!("0.006737946999085467")));
         assert_eq!(
-            bdec!(-5).exp(),
+            pdec!(-5).exp(),
             Some(
-                bdec!("0.00673794699908546709663604842314842424")
-                    + bdec!("0.00000000000000000000059663563307729027")
+                pdec!("0.006737946999085467096636048423148424")
+                    + pdec!("0.000000000000000000000582015461381543")
             )
         );
         assert_eq!(dec!(-10).exp(), Some(dec!("0.000045399929762484")));
         assert_eq!(
-            bdec!(-10).exp(),
+            pdec!(-10).exp(),
             Some(
-                bdec!("0.00004539992976248485153559151556055061")
-                    + bdec!("0.00000000000000000000001002862199768050")
+                pdec!("0.000045399929762484851535591515560550")
+                   + pdec!("0.000000000000000000000009593564125049")
             )
         );
     }
@@ -236,7 +242,7 @@ mod tests {
     #[test]
     fn test_exponent_zero() {
         assert_eq!(dec!(0).exp(), Some(dec!(1)));
-        assert_eq!(bdec!(0).exp(), Some(bdec!(1)));
+        assert_eq!(pdec!(0).exp(), Some(pdec!(1)));
     }
 
     #[test]
@@ -244,15 +250,15 @@ mod tests {
         assert_eq!(
             dec!(80).exp(),
             Some(
-                dec!("55406223843935100525711733958316612.92485672883268532")
-                    - dec!("8563021306004937.882349426621353341")
+                dec!("55406223843935100525711733958316612.924856728832685322")
+                    - dec!("8411471907589238.909955041056771071")
             )
         );
         assert_eq!(
-            bdec!(80).exp(),
+            pdec!(80).exp(),
             Some(
-                bdec!("55406223843935100525711733958316612.92485672883268532287030018828204570044")
-                    - bdec!("8563021306004937.88234942662135334307788474904963249596")
+                pdec!("55406223843935100525711733958316612.924856728832685322870300188282045700")
+                    - pdec!("8411471907589238.909955041056771071656863326999790852")
             )
         );
     }
@@ -261,8 +267,11 @@ mod tests {
     fn test_exponent_small_value() {
         assert_eq!(dec!(-30).exp(), Some(dec!("0.000000000000093576")));
         assert_eq!(
-            bdec!(-60).exp(),
-            Some(bdec!("0.00000000000000000000000000875651076269"))
+            pdec!(-60).exp(),
+            Some(
+                pdec!("0.000000000000000000000000008756510762")
+                    - pdec!("0.000000000000000000000000000000000001")
+            )
         );
     }
 
@@ -270,25 +279,25 @@ mod tests {
     fn test_exponent_smallest_value() {
         assert_eq!(dec!(-41).exp(), Some(dec!("0.000000000000000001")));
         assert_eq!(
-            bdec!(-87).exp(),
-            Some(bdec!("0.00000000000000000000000000000000000001"))
+            pdec!(-82).exp(),
+            Some(pdec!("0.000000000000000000000000000000000002"))
         );
     }
 
     #[test]
     fn test_exponent_largest_value() {
         assert_eq!(
-            dec!(88).exp(),
+            dec!(90).exp(),
             Some(
-                dec!("165163625499400185552832979626485876706.962884200004481388")
-                    - dec!("1247592587037918071.347548424821445671")
+                dec!("1220403294317840802002710035136369753970.746421099767546244")
+                    - dec!("62783923595896661921.607585533121275855")
             )
         );
         assert_eq!(
-            bdec!(88).exp(),
+            pdec!(93).exp(),
             Some(
-                bdec!("165163625499400185552832979626485876706.96288420000448138888115075308155590848")
-                 - bdec!("1247592587037918071.34754842482144567130490168358910580928")
+                pdec!("24512455429200857855527729431109153423487.564149646906095458338836041506325882")
+                 + pdec!("673513250279373616826.005878421400866518707554460260006534")
             )
         );
     }
@@ -296,24 +305,24 @@ mod tests {
     #[test]
     fn test_exponent_value_too_small() {
         assert_eq!(dec!(-42).exp(), Some(dec!(0)));
-        assert_eq!(bdec!(-88).exp(), Some(bdec!(0)));
+        assert_eq!(pdec!(-83).exp(), Some(pdec!(0)));
     }
 
     #[test]
     fn test_exponent_value_too_large() {
-        assert_eq!(dec!(89).exp(), None);
-        assert_eq!(bdec!(89).exp(), None);
+        assert_eq!(dec!(91).exp(), None);
+        assert_eq!(pdec!(94).exp(), None);
     }
 
     #[test]
     fn test_exponent_negative_min() {
         assert_eq!(Decimal::MIN.exp(), Some(dec!(0)));
-        assert_eq!(BalancedDecimal::MIN.exp(), Some(bdec!(0)));
+        assert_eq!(PreciseDecimal::MIN.exp(), Some(pdec!(0)));
     }
 
     #[test]
     fn test_exponent_positive_max() {
         assert_eq!(Decimal::MAX.exp(), None);
-        assert_eq!(BalancedDecimal::MAX.exp(), None);
+        assert_eq!(PreciseDecimal::MAX.exp(), None);
     }
 }
