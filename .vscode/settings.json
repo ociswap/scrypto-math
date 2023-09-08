@@ -4,7 +4,7 @@
         "editor.defaultFormatter": "rust-lang.rust-analyzer",
     },
     "rust-analyzer.linkedProjects": [
-        "./examples/balanced_decimal/Cargo.toml",
+        "./Cargo.toml",
         "./examples/advanced_math/Cargo.toml"
     ],
     "[python]": {
