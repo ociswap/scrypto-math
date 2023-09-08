@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 sbor = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.12.1" }
 scrypto = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.12.1" }
-# scrypto_math = { git = "https://github.com/ociswap/scrypto-math", branch = "main", version = "0.2.0" }
-scrypto_math = { path = "../../" }
+scrypto_math = { git = "https://github.com/ociswap/scrypto-math", branch = "main", version = "0.2.0" }
+# scrypto_math = { path = "../../" }
 
 [dev-dependencies]
 transaction = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.12.1" }
