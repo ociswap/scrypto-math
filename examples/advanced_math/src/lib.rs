@@ -6,7 +6,7 @@ fn calculate_output(amount: PreciseDecimal) -> Option<PreciseDecimal> {
     // it returns None if the intermediate result is None
     let output_1 = amount.pow(pdec!("2.54"))?;
     let output_2 = amount.exp()?.log10()?;
-    Some(output_1 + output_2)
+    (output_1 + output_2).checked_sqrt()
 }
 
 #[blueprint]
