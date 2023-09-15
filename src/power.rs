@@ -1,10 +1,10 @@
 use crate::exponential::ExponentialPreciseDecimal;
 use crate::logarithm::LogarithmPreciseDecimal;
 use num_traits::ToPrimitive;
-use radix_engine_common::math::decimal::*;
-use radix_engine_common::prelude::PreciseDecimal;
-use radix_engine_common::prelude::*;
-use radix_engine_common::*;
+use radix_engine_common::{
+    math::{CheckedMul, Decimal, PreciseDecimal},
+    pdec,
+};
 
 pub trait PowerDecimal {
     fn pow(&self, exp: Decimal) -> Option<Decimal>;
@@ -68,6 +68,7 @@ impl PowerPreciseDecimal for PreciseDecimal {
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
+    use radix_engine_common::dec;
 
     #[test]
     fn test_pow_exp_zero() {
@@ -146,7 +147,7 @@ mod tests {
             dec!("3.4").pow(dec!("71.43")),
             Some(
                 dec!("91947313437872693600354888137039353441.244419982586019069")
-                   - dec!("187832408272640032348.012171022248677284")
+                    - dec!("187832408272640032348.012171022248677284")
             )
         );
     }
