@@ -1,6 +1,6 @@
 [package]
 name = "scrypto_math"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 license = "MIT"
 description = "Math library extending Radix Scrypto with more advanced mathematical operations"
@@ -9,6 +9,5 @@ repository = "https://github.com/ociswap/scrypto-math"
 [dependencies]
 utils = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.12.1", version = "0.12.1" }
 radix-engine-common = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.12.1", version = "0.12.1" }
-num-bigint = "0.4.4"
-num-traits = "0.2.16"
+num-traits = "0.2.15"
 pretty_assertions = "1.4.0"

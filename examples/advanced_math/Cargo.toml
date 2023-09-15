@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 sbor = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.12.1" }
 scrypto = { git = "https://github.com/radixdlt/radixdlt-scrypto", tag = "v0.12.1" }
-scrypto_math = { git = "https://github.com/ociswap/scrypto-math", branch = "main", version = "0.2.0" }
+scrypto_math = { git = "https://github.com/ociswap/scrypto-math", branch = "main", version = "0.2.1" }
 # scrypto_math = { path = "../../" }
 
 [dev-dependencies]
@@ -19,7 +19,7 @@ opt-level = 's'        # Optimize for size.
 lto = true             # Enable Link Time Optimization.
 codegen-units = 1      # Reduce number of codegen units to increase optimizations.
 panic = 'abort'        # Abort on panic.
-strip = "debuginfo"    # Strip debug info.
+strip = true           # Strip debug info.
 overflow-checks = true # Panic in the case of an overflow.
 
 [lib]
