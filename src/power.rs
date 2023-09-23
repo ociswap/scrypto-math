@@ -2,9 +2,10 @@ use crate::exponential::ExponentialPreciseDecimal;
 use crate::logarithm::LogarithmPreciseDecimal;
 use num_traits::ToPrimitive;
 use radix_engine_common::{
-    math::{CheckedMul, Decimal, PreciseDecimal},
-    pdec,
+    math::{CheckedMul, Decimal, PreciseDecimal}
 };
+use radix_engine_interface::prelude::pdec;
+
 
 pub trait PowerDecimal {
     fn pow(&self, exp: Decimal) -> Option<Decimal>;
