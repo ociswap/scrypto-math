@@ -1,7 +1,7 @@
 use num_traits::Zero;
 use radix_engine_common::math::bnum_integer::I256;
 use radix_engine_common::math::{Decimal, PreciseDecimal};
-use radix_engine_common::pdec;
+use radix_engine_macros::pdec;
 
 const LN2: PreciseDecimal = PreciseDecimal(I256::from_digits([
     9456716947207598648,
@@ -179,7 +179,7 @@ impl LogarithmPreciseDecimal for PreciseDecimal {
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
-    use radix_engine_common::dec;
+    use radix_engine_macros::dec;
 
     #[test]
     fn test_constants() {
