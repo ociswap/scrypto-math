@@ -1,59 +1,79 @@
+/* origin: FreeBSD /usr/src/lib/msun/src/e_exp.c */
+/*
+ * ====================================================
+ * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
+ */
+/* exp(x)
+ * Returns the exponential of x.
+ *
+ * Method
+ *   1. Argument reduction:
+ *      Reduce x to an r so that |r| <= 0.5*ln2 ~ 0.34658.
+ *      Given x, find r and integer k such that
+ *
+ *               x = k*ln2 + r,  |r| <= 0.5*ln2.
+ *
+ *      Here r will be represented as r = hi-lo for better
+ *      accuracy.
+ *
+ *   2. Approximation of exp(r) by a special rational function on
+ *      the interval [0,0.34658]:
+ *      Write
+ *          R(r**2) = r*(exp(r)+1)/(exp(r)-1) = 2 + r*r/6 - r**4/360 + ...
+ *      We use a special Remez algorithm on [0,0.34658] to generate
+ *      a polynomial of degree 5 to approximate R. The maximum error
+ *      of this polynomial approximation is bounded by 2**-59. In
+ *      other words,
+ *          R(z) ~ 2.0 + P1*z + P2*z**2 + P3*z**3 + P4*z**4 + P5*z**5
+ *      (where z=r*r, and the values of P1 to P5 are listed below)
+ *      and
+ *          |                  5          |     -59
+ *          | 2.0+P1*z+...+P5*z   -  R(z) | <= 2
+ *          |                             |
+ *      The computation of exp(r) thus becomes
+ *                              2*r
+ *              exp(r) = 1 + ----------
+ *                            R(r) - r
+ *                                 r*c(r)
+ *                     = 1 + r + ----------- (for better accuracy)
+ *                                2 - c(r)
+ *      where
+ *                              2       4             10
+ *              c(r) = r - (P1*r  + P2*r  + ... + P5*r   ).
+ *
+ *   3. Scale back to obtain exp(x):
+ *      From step 1, we have
+ *         exp(x) = 2^k * exp(r)
+ *
+ * Special cases:
+ *      exp(INF) is INF, exp(NaN) is NaN;
+ *      exp(-INF) is 0, and
+ *      for finite argument, only exp(0)=1 is exact.
+ *
+ * Accuracy:
+ *      according to an error analysis, the error is always less than
+ *      1 ulp (unit in the last place).
+ */
+
 use num_traits::ToPrimitive;
-use radix_engine_common::math::bnum_integer::I256;
 use radix_engine_common::math::{Decimal, PreciseDecimal};
-use radix_engine_macros::{pdec, dec};
+use radix_engine_macros::{dec, pdec};
 
-const LN2: PreciseDecimal = PreciseDecimal(I256::from_digits([
-    9456716947207598648,
-    37575583950764745,
-    0,
-    0,
-]));
-const HALF_POSITIVE: PreciseDecimal = PreciseDecimal(I256::from_digits([
-    15683169460410122240,
-    27105054312137610,
-    0,
-    0,
-]));
-const HALF_NEGATIVE: PreciseDecimal = PreciseDecimal(I256::from_digits([
-    2763574613299429376,
-    18419639019397414005,
-    18446744073709551615,
-    18446744073709551615,
-]));
-const INVLN2: PreciseDecimal = PreciseDecimal(I256::from_digits([
-    15089719145448569129,
-    78208654878293888,
-    0,
-    0,
-]));
+const LN2: PreciseDecimal = pdec!("0.693147180559945309417232121458176568");
+const HALF_POSITIVE: PreciseDecimal = pdec!("0.5");
+const HALF_NEGATIVE: PreciseDecimal = pdec!("-0.5");
+const INVLN2: PreciseDecimal = pdec!("1.442695040888963407359924681001892137");
 
-const P1: PreciseDecimal = PreciseDecimal(I256::from_digits([
-    3234099066637680640,
-    9035018104045835,
-    0,
-    0,
-])); // 1.66666666666666019037e-01
-const P2: PreciseDecimal = PreciseDecimal(I256::from_digits([
-    11778003218777292800,
-    18446593490074488316,
-    18446744073709551615,
-    18446744073709551615,
-])); //  -2.77777777770155933842e-03
-const P3: PreciseDecimal = PreciseDecimal(I256::from_digits([
-    6886327069168830464,
-    3585324485996,
-    0,
-    0,
-])); // 6.61375632143793436117e-05
-const P4: PreciseDecimal = PreciseDecimal(I256::from_digits([
-    15836638502324193280,
-    18446743984079088161,
-    18446744073709551615,
-    18446744073709551615,
-])); // -1.65339022054652515390e-06
-const P5: PreciseDecimal =
-    PreciseDecimal(I256::from_digits([13020310661629261568, 2243288452, 0, 0])); //4.13813679705723846039e-08
+const P1: PreciseDecimal = pdec!("0.166666666666666019037"); // 1.66666666666666019037e-01
+const P2: PreciseDecimal = pdec!("-0.00277777777770155933842"); // -2.77777777770155933842e-03
+const P3: PreciseDecimal = pdec!("0.0000661375632143793436117"); // 6.61375632143793436117e-05
+const P4: PreciseDecimal = pdec!("-0.00000165339022054652515390"); // -1.65339022054652515390e-06
+const P5: PreciseDecimal = pdec!("0.0000000413813679705723846039"); //4.13813679705723846039e-08
 
 pub trait ExponentialDecimal {
     fn exp(&self) -> Option<Decimal>;
@@ -64,6 +84,8 @@ pub trait ExponentialPreciseDecimal {
 }
 
 impl ExponentialDecimal for Decimal {
+    /// Calculates the exponential function of a Decimal
+    /// Using the exponential function of a PreciseDecimal internally
     fn exp(&self) -> Option<Decimal> {
         if self < &dec!(-42) {
             return Some(Decimal::ZERO);
@@ -79,6 +101,7 @@ impl ExponentialDecimal for Decimal {
 }
 
 impl ExponentialPreciseDecimal for PreciseDecimal {
+    /// Calculates the exponential function of a PreciseDecimal
     fn exp(&self) -> Option<PreciseDecimal> {
         // based on https://github.com/rust-lang/libm/blob/master/src/math/exp.rs
         if self.is_zero() {
@@ -91,12 +114,12 @@ impl ExponentialPreciseDecimal for PreciseDecimal {
             return None;
         }
 
+        // (1) Argument Reduction
         let signed_half = if self.is_negative() {
             HALF_NEGATIVE
         } else {
             HALF_POSITIVE
         };
-
         // r = x - floor(x/ln(2) +- 0.5) * ln(2)
         // https://www.wolframalpha.com/input?i=x+-+floor%28x%2Fln%282%29+%2B+0.5%29+*+ln%282%29
         let k = INVLN2 * *self + signed_half;
@@ -107,10 +130,12 @@ impl ExponentialPreciseDecimal for PreciseDecimal {
         // println!("x_n = {:?}", LN2 * k + r);
         // println!("x_o = {:?}", self);
 
+        // (2) Approximation of exp(r)
         let rr = r * r;
         let c = r - rr * (P1 + rr * (P2 + rr * (P3 + rr * (P4 + rr * P5))));
         let exp_r = PreciseDecimal::ONE + r + (r * c) / (dec!(2) - c);
 
+        // (3) Scale back
         let two_pow_k = if self.is_negative() {
             PreciseDecimal(PreciseDecimal::ONE.0 >> k.abs() as u32)
         } else {
@@ -209,7 +234,7 @@ mod tests {
             pdec!(-1).exp(),
             Some(
                 pdec!("0.367879441171442321595523770161460867")
-                   + pdec!("0.000000000000000000068560948558969987")
+                    + pdec!("0.000000000000000000068560948558969987")
             )
         );
         assert_eq!(dec!(-2).exp(), Some(dec!("0.135335283236612691")));
@@ -217,7 +242,7 @@ mod tests {
             pdec!(-2).exp(),
             Some(
                 pdec!("0.135335283236612691893999494972484403")
-                  + pdec!("0.000000000000000000009209589825745512")
+                    + pdec!("0.000000000000000000009209589825745512")
             )
         );
         assert_eq!(dec!(-5).exp(), Some(dec!("0.006737946999085467")));
@@ -233,7 +258,7 @@ mod tests {
             pdec!(-10).exp(),
             Some(
                 pdec!("0.000045399929762484851535591515560550")
-                   + pdec!("0.000000000000000000000009593564125049")
+                    + pdec!("0.000000000000000000000009593564125049")
             )
         );
     }

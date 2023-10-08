@@ -1,3 +1,57 @@
+/* origin: FreeBSD /usr/src/lib/msun/src/e_pow.c */
+/*
+ * ====================================================
+ * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
+ */
+
+// pow(x,y) return x**y
+//
+//                    n
+// Method:  Let x =  2   * (1+f)
+//      1. Compute and return log2(x) in two pieces:                                (does not apply - due to integer math)
+//              log2(x) = w1 + w2,
+//         where w1 has 53-24 = 29 bit trailing zeros.
+//      2. Perform y*log2(x) = n+y' by simulating muti-precision                    (does not apply - due to integer math)
+//         arithmetic, where |y'|<=0.5.
+//      3. Return x**y = 2**n*exp(y'*log2)                                          (x**y = exp(ln(x) * y))
+//
+// Special cases:
+//      1.  (anything) ** 0  is 1
+//      2.  1 ** (anything)  is 1
+//      3.  (anything except 1) ** NAN is NAN                                       (does not apply - no NAN)
+//      4.  NAN ** (anything except 0) is NAN                                       (does not apply - no NAN)
+//      5.  +-(|x| > 1) **  +INF is +INF                                            (does not apply - no INF)
+//      6.  +-(|x| > 1) **  -INF is +0                                              (does not apply - no INF)
+//      7.  +-(|x| < 1) **  +INF is +0                                              (does not apply - no INF)
+//      8.  +-(|x| < 1) **  -INF is +INF                                            (does not apply - no INF)
+//      9.  -1          ** +-INF is 1                                               (does not apply - no INF)
+//      10. +0 ** (+anything except 0, NAN)               is +0
+//      11. -0 ** (+anything except 0, NAN, odd integer)  is +0                     (does not apply - only positive zero)
+//      12. +0 ** (-anything except 0, NAN)               is +INF, raise divbyzero
+//      13. -0 ** (-anything except 0, NAN, odd integer)  is +INF, raise divbyzero  (does not apply - only positive zero)
+//      14. -0 ** (+odd integer) is -0                                              (does not apply - only positive zero)
+//      15. -0 ** (-odd integer) is -INF, raise divbyzero                           (does not apply - only positive zero)
+//      16. +INF ** (+anything except 0,NAN) is +INF                                (does not apply - no INF)
+//      17. +INF ** (-anything except 0,NAN) is +0                                  (does not apply - no INF)
+//      18. -INF ** (+odd integer) is -INF                                          (does not apply - no INF)
+//      19. -INF ** (anything) = -0 ** (-anything), (anything except odd integer)   (does not apply - no INF)
+//      20. (anything) ** 1 is (anything)
+//      21. (anything) ** -1 is 1/(anything)
+//      22. (-anything) ** (integer) is (-1)**(integer)*(+anything**integer)
+//      23. (-anything except 0 and inf) ** (non-integer) is NAN
+//
+// Accuracy:
+//      pow(x,y) returns x**y nearly rounded. In particular
+//                      pow(integer,integer)
+//      always returns the correct integer provided it is
+//      representable.
+//
+
 use crate::exponential::ExponentialPreciseDecimal;
 use crate::logarithm::LogarithmPreciseDecimal;
 use num_traits::ToPrimitive;
@@ -13,6 +67,8 @@ pub trait PowerPreciseDecimal {
 }
 
 impl PowerDecimal for Decimal {
+    /// Calculates the power of a Decimal
+    /// Using the natural logarithm of PreciseDecimal internally
     fn pow(&self, exp: Decimal) -> Option<Decimal> {
         let exp = PreciseDecimal::try_from(exp).ok()?;
         PreciseDecimal::try_from(*self)
@@ -23,24 +79,31 @@ impl PowerDecimal for Decimal {
 }
 
 impl PowerPreciseDecimal for PreciseDecimal {
+    /// Calculates the power of a PreciseDecimal
     fn pow(&self, exp: PreciseDecimal) -> Option<PreciseDecimal> {
         // based on https://github.com/rust-lang/libm/blob/master/src/math/pow.rs
         if exp == PreciseDecimal::ZERO {
+            // special case (1)
             return Some(PreciseDecimal::ONE);
         }
         if *self == PreciseDecimal::ONE {
+            // special case (2)
             return Some(PreciseDecimal::ONE);
         }
         if *self == PreciseDecimal::ZERO && exp.is_positive() {
+            // special case (10)
             return Some(PreciseDecimal::ZERO);
         }
         if *self == PreciseDecimal::ZERO && exp.is_negative() {
+            // special case (12)
             return None;
         }
         if exp == PreciseDecimal::ONE {
+            // special case (20)
             return Some(self.clone());
         }
         if exp == pdec!(-1) {
+            // special case (21)
             return Some(PreciseDecimal::ONE / *self);
         }
 
@@ -48,8 +111,10 @@ impl PowerPreciseDecimal for PreciseDecimal {
             let exp_is_integer =
                 PreciseDecimal(exp.0 / PreciseDecimal::ONE.0 * PreciseDecimal::ONE.0) == exp;
             if !exp_is_integer {
+                // special case (23)
                 return None;
             }
+            // special case (22)
             let is_even = (exp.0 / PreciseDecimal::ONE.0).to_i32()? % 2 == 0;
             let pow = (self.checked_abs()?.ln()? * exp).exp();
             if is_even {
