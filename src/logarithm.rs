@@ -52,7 +52,7 @@
  * Accuracy:
  *      according to an error analysis, the error is always less than
  *      1 ulp (unit in the last place).
- * 
+ *
  * Misc:
  *      hi and lo separation is not needed for Decimal and PreciseDecimal in Scrypto
  *      due to exact integer calculation.
