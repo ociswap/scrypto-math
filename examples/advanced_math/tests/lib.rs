@@ -39,5 +39,8 @@ fn test_advanced_math_demo() {
     let commit_result = receipt.expect_commit_success();
     let (_, output_free_tokens): (Bucket, Decimal) = commit_result.output(1);
 
-    assert_eq!(output_free_tokens, dec!("4.435924499291774560") + dec!("0.000000000000000001"));
+    assert_eq!(
+        output_free_tokens,
+        dec!("4.435924499291774560") + dec!("0.000000000000000001")
+    );
 }
