@@ -46,26 +46,26 @@ class FixedBaseDecimal(decimal.Decimal):
     def _cast(self, __value: decimal.Decimal):
         return
 
-    def __abs__(self) -> decimal.Decimal:
-        return self._cast(super().__abs__())
+    def __abs__(self, *args, **kwargs) -> decimal.Decimal:
+        return self._cast(super().__abs__(*args, **kwargs))
 
-    def __add__(self, __value: decimal.Decimal):
-        return self._cast(super().__add__(__value))
+    def __add__(self, *args, **kwargs):
+        return self._cast(super().__add__(*args, **kwargs))
 
-    def __sub__(self, __value: decimal.Decimal):
-        return self._cast(super().__sub__(__value))
+    def __sub__(self, *args, **kwargs):
+        return self._cast(super().__sub__(*args, **kwargs))
 
-    def __mul__(self, __value: decimal.Decimal):
-        return self._cast(super().__mul__(__value))
+    def __mul__(self, *args, **kwargs):
+        return self._cast(super().__mul__(*args, **kwargs))
 
-    def __truediv__(self, __value: decimal.Decimal):
-        return self._cast(super().__truediv__(__value))
+    def __truediv__(self, *args, **kwargs):
+        return self._cast(super().__truediv__(*args, **kwargs))
 
-    def __pow__(self, __value: decimal.Decimal):
-        return self._cast(super().__pow__(__value))
+    def __pow__(self, *args, **kwargs):
+        return self._cast(super().__pow__(*args, **kwargs))
 
-    def sqrt(self, context: decimal.Context | None = None):
-        return self._cast(super().sqrt(context))
+    def sqrt(self, *args, **kwargs):
+        return self._cast(super().sqrt(*args, **kwargs))
 
     def powi(self, exp: int):
         # use fixed precision rounding in every iteration to match the Scrypto calculation
