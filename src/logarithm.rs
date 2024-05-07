@@ -59,8 +59,8 @@
  */
 
 use num_traits::Zero;
-use radix_engine_common::math::{Decimal, PreciseDecimal};
-use radix_engine_macros::pdec;
+use radix_common::math::{Decimal, PreciseDecimal};
+use radix_common_derive::pdec;
 
 const LN2: PreciseDecimal = pdec!("0.693147180559945309417232121458176568");
 const LN10: PreciseDecimal = pdec!("2.302585092994045684017991454684364207");
@@ -209,7 +209,7 @@ impl LogarithmPreciseDecimal for PreciseDecimal {
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
-    use radix_engine_macros::dec;
+    use radix_common_derive::dec;
 
     #[test]
     fn test_constants() {

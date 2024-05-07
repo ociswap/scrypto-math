@@ -61,8 +61,8 @@
  */
 
 use num_traits::ToPrimitive;
-use radix_engine_common::math::{Decimal, PreciseDecimal};
-use radix_engine_macros::{dec, pdec};
+use radix_common::math::{Decimal, PreciseDecimal};
+use radix_common_derive::{dec, pdec};
 
 const LN2: PreciseDecimal = pdec!("0.693147180559945309417232121458176568");
 const HALF_POSITIVE: PreciseDecimal = pdec!("0.5");
