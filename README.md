@@ -9,7 +9,7 @@ Radix Scrypto currently is lacking more advanced mathematical operations like `e
 Add `scrypto_math` to your depdencies in the `Cargo.toml` of your Scrypto blueprint.
 ```rust
 [dependencies]
-scrypto_math = { git = "https://github.com/ociswap/scrypto-math", tag = "v0.5.0" }
+scrypto_math = { git = "https://github.com/ociswap/scrypto-math", tag = "v0.6.0" }
 ```
 Import the module:
 ```rust

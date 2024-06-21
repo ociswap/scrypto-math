@@ -1,14 +1,15 @@
+use ledger_simulator::LedgerSimulatorBuilder;
+use radix_transactions::builder::ManifestBuilder;
 use scrypto::prelude::*;
-use scrypto_unit::*;
-use transaction::builder::ManifestBuilder;
+use scrypto_test::*;
 
 #[test]
 fn test_advanced_math_demo() {
-    let mut test_runner = TestRunnerBuilder::new().without_trace().build();
+    let mut test_runner = LedgerSimulatorBuilder::new().without_kernel_trace().build();
     let (public_key, _private_key, account) = test_runner.new_allocated_account();
     let package_address = test_runner.compile_and_publish(this_package!());
 
-    let manifest = ManifestBuilder::new()
+    let manifest = ManifestBuilder::with_lock_fee_from_faucet()
         .call_function(
             package_address,
             "AdvancedMathDemo",
@@ -16,14 +17,14 @@ fn test_advanced_math_demo() {
             manifest_args!(),
         )
         .build();
-    let receipt = test_runner.execute_manifest_ignoring_fee(
+    let receipt = test_runner.execute_manifest(
         manifest,
         vec![NonFungibleGlobalId::from_public_key(&public_key)],
     );
     println!("{:?}\n", receipt);
     let component = receipt.expect_commit(true).new_component_addresses()[0];
 
-    let manifest = ManifestBuilder::new()
+    let manifest = ManifestBuilder::with_lock_fee_from_faucet()
         .call_method(
             component,
             "free_tokens",
@@ -31,7 +32,7 @@ fn test_advanced_math_demo() {
         )
         .deposit_batch(account)
         .build();
-    let receipt = test_runner.execute_manifest_ignoring_fee(
+    let receipt = test_runner.execute_manifest(
         manifest,
         vec![NonFungibleGlobalId::from_public_key(&public_key)],
     );
