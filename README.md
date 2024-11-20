@@ -128,7 +128,7 @@ Resulting in:
 error_pow(x, y) = error_exp(ln(x) * y) + e^(ln(x) * y) * error_ln * y
 ```
 
-The Python library `scryptomath` provides the function [error_pow](python/scryptomath.py) to estimate the maximum error for a specific value.
+The Python library `scryptomath` provides the function [error_pow](python/scryptomath.py) to estimate the maximum error for specific values.
 
 ## Contributions
 We are happy to collaborate and review and merge pull requests :)
