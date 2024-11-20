@@ -210,6 +210,7 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
     use radix_common_derive::dec;
+    use test_case::test_case;
 
     #[test]
     fn test_constants() {
@@ -447,5 +448,18 @@ mod tests {
             Decimal::MAX.log_base(dec!(8)),
             Some(dec!("43.735098097342492579"))
         );
+    }
+
+    #[test_case(dec!(0.000000001), dec!(-20.723265836946411157), dec!(0.000000000000000002); "tiny value")]
+    #[test_case(dec!(0.01), dec!(-4.605170185988091369), dec!(0.000000000000000002); "small value")]
+    #[test_case(dec!(0.9), dec!(-0.105360515657826302), dec!(0.000000000000000002); "value near one")]
+    #[test_case(dec!(0.99), dec!(-0.010050335853501442), dec!(0.000000000000000002); "value very near one")]
+    #[test_case(dec!(1.1), dec!(0.095310179804324860), dec!(0.000000000000000002); "value slightly above one")]
+    #[test_case(dec!(4.4), dec!(1.481604540924215478), dec!(0.000000000000000002); "medium value")]
+    #[test_case(dec!(50), dec!(3.912023005428146058), dec!(0.000000000000000002); "large value")]
+    fn test_ln_error(value: Decimal, target_result: Decimal, max_error: Decimal) {
+        let result = value.ln().unwrap();
+        let error = (result - target_result).checked_abs().unwrap();
+        assert!(error <= max_error);
     }
 }
