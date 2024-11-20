@@ -36,14 +36,14 @@ You can see a full blueprint example including tests here [AdvancedMathDemo](exa
 #### Error Estimation
 The Approxmation error of `exp_r(r)` is bound by `2^-59 ~ 1.8*10^-18` with reduced argument `r` of `x`.
 
-```
+```txt
 e^x = 2^k * exp_r'(r)                         with k determined by the argument reduction
 e^x = 2^k * (exp_r(r) + error_exp_r)
 e^x = 2^k * exp_r(r) + 2^k * error_exp_r
 e^x = 2^k * exp_r(r) + error_exp
 ```
 Resulting in:
-```
+```txt
 error_exp(value) = 2^k * error_exp_r = 2^k * 2^-59 = 2^(k - 59)
 ```
 
@@ -124,7 +124,7 @@ e'^(ln(x) * y + error_ln * y)
 ```
 
 Resulting in:
-```
+```txt
 error_pow(x, y) = error_exp(ln(x) * y) + e^(ln(x) * y) * error_ln * y
 ```
 
