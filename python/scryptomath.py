@@ -139,9 +139,11 @@ def relative_error(result: decimal.Decimal, error: decimal.Decimal):
 
 def error_ln() -> decimal.Decimal:
     """
-    Approximation error of `ln` is bound by 2^-58.45 ~ 2.6*10^-18.
+    Approximation error of `ln` is bound by `2^-58.45 ~ 2.6*10^-18`.
 
+    ```txt
     error_ln = 2^-58.45 ~ 2.6*10^-18
+    ```
     """
     with localcontext() as context:
         context.prec = 40
@@ -150,9 +152,9 @@ def error_ln() -> decimal.Decimal:
 
 def error_exp(value: decimal.Decimal) -> decimal.Decimal:
     """
-    Approxmation error of exp_r(r) is bound by 2^-59 ~ 1.8*10^-18 with reduced argument r of x.
+    Approxmation error of exp_r(r) is bound by `2^-59 ~ 1.8*10^-18` with reduced argument `r` of `x`.
 
-    ```
+    ```txt
     e^x = 2^k * exp_r'(r)                         with k determined by the argument reduction
     e^x = 2^k * (exp_r(r) + error_exp_r)
     e^x = 2^k * exp_r(r) + 2^k * error_exp_r
@@ -204,7 +206,7 @@ def error_pow(base: decimal.Decimal, exp: decimal.Decimal) -> decimal.Decimal:
     ```
 
     Resulting in:
-    ```
+    ```txt
     error_pow(x, y) = error_exp(ln(x) * y) + e^(ln(x) * y) * error_ln * y
     ```
     """
