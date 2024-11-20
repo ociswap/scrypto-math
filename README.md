@@ -34,7 +34,7 @@ let exp: Option<PreciseDecimal> = pdec!(4).exp();
 You can see a full blueprint example including tests here [AdvancedMathDemo](examples/advanced_math/src/lib.rs).
 
 #### Error Estimation
-The Approxmation error of `exp_r(r)` is bound by `2^-59 ~ 2*10^-18` with reduced argument `r` of `x`.
+The Approxmation error of `exp_r(r)` is bound by `2^-59 ~ 1.8*10^-18` with reduced argument `r` of `x`.
 
 ```
 e^x = 2^k * exp_r'(r)                         with k determined by the argument reduction
