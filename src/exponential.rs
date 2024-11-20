@@ -145,6 +145,7 @@ impl ExponentialPreciseDecimal for PreciseDecimal {
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
+    use test_case::test_case;
 
     #[test]
     fn test_constants() {
@@ -344,5 +345,18 @@ mod tests {
     fn test_exponent_positive_max() {
         assert_eq!(Decimal::MAX.exp(), None);
         assert_eq!(PreciseDecimal::MAX.exp(), None);
+    }
+
+    #[test_case(dec!(0.000000001), dec!(1.000000001000000000), dec!(000000000000000001); "tiny value")]
+    #[test_case(dec!(0.01), dec!(1.010050167084168057), dec!(0.000000000000000001); "small value")]
+    #[test_case(dec!(0.9), dec!(2.459603111156949663), dec!(0.000000000000000003); "value near one")]
+    #[test_case(dec!(0.99), dec!(2.691234472349262289), dec!(0.000000000000000003); "value very near one")]
+    #[test_case(dec!(1.1), dec!(3.004166023946433112), dec!(0.000000000000000006); "value slightly above one")]
+    #[test_case(dec!(4.4), dec!(81.450868664968117444), dec!(0.000000000000000111); "medium value")]
+    #[test_case(dec!(50), dec!(5184705528587072464087.453322933485384827), dec!(8192.000000000000000000); "large value")]
+    fn test_exp_error(value: Decimal, target_result: Decimal, max_error: Decimal) {
+        let result = value.exp().unwrap();
+        let error = (result - target_result).checked_abs().unwrap();
+        assert!(error <= max_error);
     }
 }

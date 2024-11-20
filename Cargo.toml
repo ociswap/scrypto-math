@@ -11,4 +11,7 @@ radix-rust = "1.2.0"
 radix-common = "1.2.0"
 radix-common-derive = "1.2.0"
 num-traits = "0.2.19"
+
+[dev-dependencies]
 pretty_assertions = "1.4.0"
+test-case = "3"

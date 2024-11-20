@@ -132,6 +132,7 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
     use radix_common_derive::dec;
+    use test_case::test_case;
 
     #[test]
     fn test_pow_exp_zero() {
@@ -240,5 +241,20 @@ mod tests {
             dec!("3.4").pow(dec!("-15.43")),
             Some(dec!("0.000000006299126210"))
         );
+    }
+
+    #[test_case(dec!(0.000000001), dec!(20), dec!(0), dec!(0); "tiny base small exponent")]
+    #[test_case(dec!(0.01), dec!(0.05), dec!(0.794328234724281502), dec!(0.00000000000000001); "small base small exponent")]
+    #[test_case(dec!(0.01), dec!(20), dec!(0), dec!(0); "small base large exponent")]
+    #[test_case(dec!(0.9), dec!(0.05), dec!(0.994745825930531056), dec!(0.000000000000000001); "base near one small exponent")]
+    #[test_case(dec!(0.9), dec!(20), dec!(0.121576654590569288), dec!(0.000000000000000006); "base near one large exponent")]
+    #[test_case(dec!(0.99), dec!(0.05), dec!(0.999497609447741526), dec!(0.000000000000000001); "base very near one small exponent")]
+    #[test_case(dec!(0.99), dec!(20), dec!(0.817906937597230870), dec!(0.00000000000000043); "base very near one large exponent")]
+    #[test_case(dec!(1.1), dec!(50), dec!(117.390852879695316506), dec!(0.000000000000015129); "base slightly above one large exponent")]
+    #[test_case(dec!(4.4), dec!(50), dec!(148810585114249539880786087698064.3291903), dec!(19178810849144331.490338637325164985); "large base large exponent")]
+    fn test_pow_error(base: Decimal, exp: Decimal, target_result: Decimal, max_error: Decimal) {
+        let result = base.pow(exp).unwrap();
+        let error = (result - target_result).checked_abs().unwrap();
+        assert!(error <= max_error);
     }
 }

@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Union
 import decimal
+from decimal import localcontext
 
 
 decimal.getcontext().prec = 500
@@ -128,3 +129,88 @@ class PreciseDecimal(ScryptoBaseDecimal):
 
     def floor_to_decimal(self) -> "Decimal":
         return Decimal._cast(self)
+
+
+def relative_error(result: decimal.Decimal, error: decimal.Decimal):
+    with localcontext() as context:
+        context.prec = 40
+        return abs(error) / abs(result)
+
+
+def error_ln() -> decimal.Decimal:
+    """
+    Approximation error of `ln` is bound by `2^-58.45 ~ 2.6*10^-18`.
+
+    ```txt
+    error_ln = 2^-58.45 ~ 2.6*10^-18
+    ```
+    """
+    with localcontext() as context:
+        context.prec = 40
+        return decimal.Decimal(2) ** decimal.Decimal("-58.45")
+
+
+def error_exp(value: decimal.Decimal) -> decimal.Decimal:
+    """
+    Approxmation error of exp_r(r) is bound by `2^-59 ~ 1.8*10^-18` with reduced argument `r` of `x`.
+
+    ```txt
+    e^x = 2^k * exp_r'(r)                         with k determined by the argument reduction
+    e^x = 2^k * (exp_r(r) + error_exp_r)
+    e^x = 2^k * exp_r(r) + 2^k * error_exp_r
+    e^x = 2^k * exp_r(r) + error_exp
+
+    error_exp(value) = 2^k * error_exp_r = 2^k * 2^-59 = 2^(k - 59)
+    ```
+    """
+    with localcontext() as context:
+        context.prec = 40
+        signed_half = (
+            decimal.Decimal("-0.5")
+            if value < decimal.Decimal(0)
+            else decimal.Decimal("0.5")
+        )
+        k = int((value / decimal.Decimal(2).ln() + signed_half))
+        return decimal.Decimal(2) ** (k - 59)
+
+
+def error_pow(base: decimal.Decimal, exp: decimal.Decimal) -> decimal.Decimal:
+    """
+    Calculatiion of `pow` is based on `exp` and `ln`:
+    ```txt
+    x^y = e^(ln(x) * y)
+    ```
+
+    Accounting for approximation errors gives:
+    ```txt
+    e'^(ln'(x) * y)
+    = e'^((ln(x) + error_ln) * y)
+    = e'^(ln(x) * y + error_ln * y)
+    ```
+
+    Using Taylor expansion we can approximate e^(x+error) for |error| << 1 with: e^(n + error) ~ e^n + e^n * error.
+    e'(n) and ln'(n) represent the exponential and logarithmic function with approximation error.
+
+    Even with an unreasonable large exponent like y=10^6, we'd still get:
+    ```txt
+    error_ln * y ≈ (3×10^-18) * 10^6 = 3×10^-12
+    ```
+    which is much smaller than one.
+
+    Allowing to separate the error term:
+    ```txt
+    e'^(ln(x) * y + error_ln * y)
+    ~ e'^(ln(x) * y) + e^(ln(x) * y) * error_ln * y
+    = e^(ln(x) * y) + error_exp(ln(x) * y) + e^(ln(x) * y) * error_ln * y
+    = e^(ln(x) * y) + error_pow(x, y)
+    ```
+
+    Resulting in:
+    ```txt
+    error_pow(x, y) = error_exp(ln(x) * y) + e^(ln(x) * y) * error_ln * y
+    ```
+    """
+    with localcontext() as context:
+        context.prec = 40
+        e_exp = base.ln() * exp
+        return error_exp(e_exp) + e_exp.exp() * error_ln() * exp
