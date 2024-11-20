@@ -50,7 +50,7 @@ error_exp(value) = 2^k * error_exp_r = 2^k * 2^-59 = 2^(k - 59)
 Overall this provides an approximation error lower than ~ 18 significant digits. However, the error can overflow to the next digits, meaning this is no guarantee.
 Only the maximum error can be guaranteed, but not the significant digits.
 
-The Python library `scryptomath` provides the function [error_exp](python/scryptomath.py#user-content-error_exp)  to estimate the maximum error for a specific value.
+The Python library `scryptomath` provides the function [error_exp](python/scryptomath.py) to estimate the maximum error for a specific value.
 
 ### Logarithm Function
 Logarithm is available for `Decimal` and `PreciseDecimal`. with a maximum polynomial approximation error bound by `2**-58.45` (~ `2.6*10**-18`).
@@ -76,7 +76,7 @@ You can see a full blueprint example including tests here [AdvancedMathDemo](exa
 #### Error Estimation
 The maximum polynomial approximation error is bound by the constant `2**-58.45` (~ `2.6*10**-18`).
 
-The Python library `scryptomath` provides the function [error_ln](python/scryptomath.py#user-content-error_ln) giving the maximum error.
+The Python library `scryptomath` provides the function [error_ln](python/scryptomath.py) giving the maximum error.
 
 ### Power Function
 The power function internally uses both `exp` and `ln` and also covers various special cases like `0**0` or `-2**3`.
@@ -128,7 +128,7 @@ Resulting in:
 error_pow(x, y) = error_exp(ln(x) * y) + e^(ln(x) * y) * error_ln * y
 ```
 
-The Python library `scryptomath` provides the function [error_pow](python/scryptomath.py#user-content-error_pow) to estimate the maximum error for a specific value.
+The Python library `scryptomath` provides the function [error_pow](python/scryptomath.py) to estimate the maximum error for a specific value.
 
 ## Contributions
 We are happy to collaborate and review and merge pull requests :)
