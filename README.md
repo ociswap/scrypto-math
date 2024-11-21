@@ -1,7 +1,7 @@
 # scrypto_math
 
 ## Why
-Radix Scrypto currently is lacking more advanced mathematical operations like `exp`, `log` or `pow`.
+Radix Scrypto currently is lacking more advanced mathematical operations like `exp`, `ln` or `pow`.
 
 `scrypto_math` aims to provide an alternative until these functionalities are provided upstream. The ultimate goal of `scrypto_math` however is to make itself obsolete.
 
@@ -15,6 +15,20 @@ Import the module:
 ```rust
 use scrypto_math::*;
 ```
+
+When using mathematical functions like `exp`, `ln`, or `pow`, it's important to account for their approximation errors in your Scrypto code:
+
+- `ln` has a constant maximum error of ~2.6×10⁻¹⁸ (2⁻⁵⁸·⁴⁵)
+- `exp` and `pow` have variable maximum errors that depend on the input values
+- For `exp(x)`, the error grows exponentially with x
+- For `pow(x,y)`, the error depends on both the base x and exponent y
+
+To handle these errors safely:
+
+1. Analyze the possible input ranges for your specific use case
+2. Use the Python `scryptomath` library's error estimation functions to calculate maximum errors
+3. Add appropriate safety margins by rounding in the direction that favors your component
+4. Consider using `PreciseDecimal` for intermediate calculations to minimize error propagation
 
 ## Featues
 
