@@ -257,4 +257,22 @@ mod tests {
         let error = (result - target_result).checked_abs().unwrap();
         assert!(error <= max_error);
     }
+
+    #[test_case(dec!(2), dec!(1.414213562373095048); "2")]
+    #[test_case(dec!(37), dec!(6.082762530298219688); "37")]
+    fn test_pow_sqrt_dec(number: Decimal, exact_result: Decimal) {
+        let sqrt_pow = number.pow(dec!(0.5)).unwrap();
+        let sqrt_native = number.checked_sqrt().unwrap();
+        assert_eq!(sqrt_pow, exact_result);
+        assert_eq!(sqrt_native, exact_result);
+    }
+
+    #[test_case(pdec!(2), pdec!(1.414213562373095048801688724209698078); "2")]
+    #[test_case(pdec!(37), pdec!(6.082762530298219688999684245202067062); "37")]
+    fn test_pow_sqrt_pdec(number: PreciseDecimal, exact_result: PreciseDecimal) {
+        let sqrt_pow = number.pow(pdec!(0.5)).unwrap();
+        let sqrt_native = number.checked_sqrt().unwrap();
+        assert!((sqrt_pow - exact_result).checked_abs().unwrap() < pdec!(0.000000000000000001)); // pow has a maximum precision of roughly Decimal precision
+        assert_eq!(sqrt_native, exact_result); // native sqrt is more precise and can handle full PreciseDecimal precision
+    }
 }
