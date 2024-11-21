@@ -16,6 +16,7 @@ Import the module:
 use scrypto_math::*;
 ```
 
+## Error Estimation
 When using mathematical functions like `exp`, `ln`, or `pow`, it's important to account for their approximation errors in your Scrypto code:
 
 - `ln` has a constant maximum error of ~2.6×10⁻¹⁸ (2⁻⁵⁸·⁴⁵)
