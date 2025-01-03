@@ -91,7 +91,8 @@ pub trait LogarithmPreciseDecimal {
 /// Reduces the argument x by finding k and f such that
 /// x = 2^k * (1+f)    where  sqrt(2)/2 < 1+f < sqrt(2)
 fn log_reduce_argument(number: PreciseDecimal) -> (i32, PreciseDecimal) {
-    let full_integer = number.0 / PreciseDecimal::ONE.0;
+    let one_subunits = PreciseDecimal::ONE.precise_subunits();
+    let full_integer = number.precise_subunits() / one_subunits;
 
     if full_integer.is_zero() {
         if number >= SQRT_HALF {
@@ -99,8 +100,9 @@ fn log_reduce_argument(number: PreciseDecimal) -> (i32, PreciseDecimal) {
         }
 
         // uses leading zeros of the full big integer to derive k
-        let k = number.0.leading_zeros() as i32 - SQRT_HALF.0.leading_zeros() as i32;
-        let r = number * PreciseDecimal(PreciseDecimal::ONE.0 << k as u32);
+        let k = number.precise_subunits().leading_zeros() as i32
+            - SQRT_HALF.precise_subunits().leading_zeros() as i32;
+        let r = number * PreciseDecimal::from_precise_subunits(one_subunits << k as u32);
 
         if r >= SQRT_HALF {
             return (-k, r);
@@ -113,7 +115,7 @@ fn log_reduce_argument(number: PreciseDecimal) -> (i32, PreciseDecimal) {
     // uses leading zeros of the full big integer to derive k
     // 255 bits only because the first bit is the sign bit
     let k = 255 - full_integer.leading_zeros() as i32; // index highest integer bit
-    let r = number / PreciseDecimal(PreciseDecimal::ONE.0 << k as u32);
+    let r = number / PreciseDecimal::from_precise_subunits(one_subunits << k as u32);
 
     if r <= SQRT {
         return (k, r);

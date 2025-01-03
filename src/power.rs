@@ -108,14 +108,16 @@ impl PowerPreciseDecimal for PreciseDecimal {
         }
 
         if self.is_negative() {
-            let exp_is_integer =
-                PreciseDecimal(exp.0 / PreciseDecimal::ONE.0 * PreciseDecimal::ONE.0) == exp;
+            let one_subunits = PreciseDecimal::ONE.precise_subunits();
+            let exp_is_integer = PreciseDecimal::from_precise_subunits(
+                exp.precise_subunits() / one_subunits * one_subunits,
+            ) == exp;
             if !exp_is_integer {
                 // special case (23)
                 return None;
             }
             // special case (22)
-            let is_even = (exp.0 / PreciseDecimal::ONE.0).to_i32()? % 2 == 0;
+            let is_even = (exp.precise_subunits() / one_subunits).to_i32()? % 2 == 0;
             let pow = (self.checked_abs()?.ln()? * exp).exp();
             if is_even {
                 return pow;
