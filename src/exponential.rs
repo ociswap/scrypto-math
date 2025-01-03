@@ -135,11 +135,12 @@ impl ExponentialPreciseDecimal for PreciseDecimal {
         let exp_r = PreciseDecimal::ONE + r + (r * c) / (dec!(2) - c);
 
         // (3) Scale back
-        let two_pow_k = PreciseDecimal::from_precise_subunits(if self.is_negative() {
+        let two_pow_k_subunits = if self.is_negative() {
             one_subunits >> k.abs() as u32
         } else {
             one_subunits << k as u32 // k <= 130
-        });
+        };
+        let two_pow_k = PreciseDecimal::from_precise_subunits(two_pow_k_subunits);
         Some(two_pow_k * exp_r)
     }
 }
