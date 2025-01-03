@@ -120,10 +120,13 @@ impl ExponentialPreciseDecimal for PreciseDecimal {
         } else {
             HALF_POSITIVE
         };
+
+        let one_subunits = PreciseDecimal::ONE.precise_subunits();
+
         // r = x - floor(x/ln(2) +- 0.5) * ln(2)
         // https://www.wolframalpha.com/input?i=x+-+floor%28x%2Fln%282%29+%2B+0.5%29+*+ln%282%29
         let k = INVLN2 * *self + signed_half;
-        let k: i32 = (k.0 / PreciseDecimal::ONE.0).to_i32().unwrap();
+        let k: i32 = (k.precise_subunits() / one_subunits).to_i32().unwrap();
         let r = *self - LN2 * k;
 
         // (2) Approximation of exp(r)
@@ -132,11 +135,11 @@ impl ExponentialPreciseDecimal for PreciseDecimal {
         let exp_r = PreciseDecimal::ONE + r + (r * c) / (dec!(2) - c);
 
         // (3) Scale back
-        let two_pow_k = if self.is_negative() {
-            PreciseDecimal(PreciseDecimal::ONE.0 >> k.abs() as u32)
+        let two_pow_k = PreciseDecimal::from_precise_subunits(if self.is_negative() {
+            one_subunits >> k.abs() as u32
         } else {
-            PreciseDecimal(PreciseDecimal::ONE.0 << k as u32) // k <= 130
-        };
+            one_subunits << k as u32 // k <= 130
+        });
         Some(two_pow_k * exp_r)
     }
 }
