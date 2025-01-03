@@ -1,0 +1,26 @@
+name: tests
+on: push
+
+jobs:
+  scryptomath_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          default: true
+          profile: minimal
+          target: wasm32-unknown-unknown
+          toolchain: 1.81.0  # should match the rust version of the scrypto-builder
+
+      - name: Setup cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: "true"
+          cache-all-crates: "true"
+
+      - run: cargo test --profile=dev --no-fail-fast
